@@ -126,6 +126,7 @@ popd
 %changelog
 * Mon Nov 11 2019 Mike DePaulo <mikedep333@gmail.com> - 0.1.8-12.0.1
 - Build Python 3 subpackage (EL7-specific logic)
+- Move libcomps.spec to root dir to fix copr / rpkg SRPM builds
 
 * Mon Jun 11 2018 Marek Blaha <mblaha@redhat.com> - 0.1.8-12
 - Build for RHEL 7
