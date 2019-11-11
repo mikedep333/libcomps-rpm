@@ -1,12 +1,6 @@
-%if 0%{?rhel} && 0%{?rhel} <= 7
-%bcond_with python3
-%else
-%bcond_without python3
-%endif
-
 Name:           libcomps
 Version:        0.1.8
-Release:        12%{?dist}
+Release:        12.0.1%{?dist}
 Summary:        Comps XML file manipulation library
 
 License:        GPLv2+
@@ -57,7 +51,6 @@ Requires:       %{name}%{?_isa} = %{version}-%{release}
 %description -n python2-%{name}
 Python 2 bindings for libcomps library.
 
-%if %{with python3}
 %package -n python3-%{name}
 Summary:        Python 3 bindings for libcomps library
 BuildRequires:  python3-devel
@@ -67,16 +60,13 @@ Obsoletes:      platform-python-%{name} < %{version}-%{release}
 
 %description -n python3-%{name}
 Python3 bindings for libcomps library.
-%endif
 
 %prep
 %autosetup -n %{name}-%{name}-%{version}
 
 mkdir build
 
-%if %{with python3}
 mkdir build-py3
-%endif
 
 %build
 pushd build
@@ -86,33 +76,28 @@ pushd build
   make %{?_smp_mflags} pydocs
 popd
 
-%if %{with python3}
 pushd build-py3
-  %cmake ../libcomps/ -DPYTHON_DESIRED:STRING=3
+# Workaround the limitations of EL7's RPM macros and/or old version of cmake
+  %cmake ../libcomps/ -DPYTHON_DESIRED:STRING=3 -DPYTHON_INCLUDE_DIR=/usr/include/python3.6m -DPYTHON_LIBRARY=/usr/lib64/libpython3.6m.so
   %make_build
 popd
-%endif
 
 %install
 pushd build
   %make_install
 popd
 
-%if %{with python3}
 pushd build-py3
   %make_install
 popd
-%endif
 
 %check
 pushd build
   make test
 popd
-%if %{with python3}
 pushd build-py3
   make pytest
 popd
-%endif
 
 %post -p /sbin/ldconfig
 %postun -p /sbin/ldconfig
@@ -135,12 +120,13 @@ popd
 %files -n python2-%{name}
 %{python2_sitearch}/%{name}/
 
-%if %{with python3}
 %files -n python3-%{name}
 %{python3_sitearch}/%{name}/
-%endif
 
 %changelog
+* Mon Nov 11 2019 Mike DePaulo <mikedep333@gmail.com> - 0.1.8-12.0.1
+- Build Python 3 subpackage (EL7-specific logic)
+
 * Mon Jun 11 2018 Marek Blaha <mblaha@redhat.com> - 0.1.8-12
 - Build for RHEL 7
 - Do not use %%ldconfig_scriptlets
