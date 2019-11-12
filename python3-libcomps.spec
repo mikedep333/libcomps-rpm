@@ -1,11 +1,11 @@
-Name:           libcomps
+%define orig_name libcomps
+Name:           python3-libcomps
 Version:        0.1.8
-Release:        12.0.1%{?dist}
-Summary:        Comps XML file manipulation library
+Release:        12%{?dist}
 
 License:        GPLv2+
 URL:            https://github.com/rpm-software-management/libcomps
-Source0:        %{url}/archive/%{name}-%{version}/%{name}-%{version}.tar.gz
+Source0:        %{url}/archive/%{orig_name}-%{version}/%{orig_name}-%{version}.tar.gz
 
 BuildRequires:  cmake
 BuildRequires:  gcc
@@ -13,69 +13,21 @@ BuildRequires:  libxml2-devel
 BuildRequires:  check-devel
 BuildRequires:  expat-devel
 
-%description
-Libcomps is library for structure-like manipulation with content of
-comps XML files. Supports read/write XML file, structure(s) modification.
-
-%package devel
-Summary:        Development files for libcomps library
-Requires:       %{name}%{?_isa} = %{version}-%{release}
-
-%description devel
-Development files for libcomps library.
-
-%package doc
-Summary:        Documentation files for libcomps library
-Requires:       %{name} = %{version}-%{release}
-BuildArch:      noarch
-BuildRequires:  doxygen
-
-%description doc
-Documentation files for libcomps library.
-
-%package -n python-%{name}-doc
-Summary:        Documentation files for python bindings libcomps library
-Requires:       %{name} = %{version}-%{release}
-BuildArch:      noarch
-BuildRequires:  python-sphinx
-
-%description -n python-%{name}-doc
-Documentation files for python bindings libcomps library.
-
-%package -n python2-%{name}
-Summary:        Python 2 bindings for libcomps library
-%{?python_provide:%python_provide python2-%{name}}
-BuildRequires:  python2-devel
-Requires:       %{name}%{?_isa} = %{version}-%{release}
-
-%description -n python2-%{name}
-Python 2 bindings for libcomps library.
-
-%package -n python3-%{name}
 Summary:        Python 3 bindings for libcomps library
 BuildRequires:  python3-devel
-%{?python_provide:%python_provide python3-%{name}}
-Requires:       %{name}%{?_isa} = %{version}-%{release}
+%{?python_provide:%python_provide python3-%{orig_name}}
+Requires:       %{orig_name}%{?_isa} = %{version}-%{release}
 Obsoletes:      platform-python-%{name} < %{version}-%{release}
 
-%description -n python3-%{name}
+%description
 Python3 bindings for libcomps library.
 
 %prep
-%autosetup -n %{name}-%{name}-%{version}
-
-mkdir build
+%autosetup -n %{orig_name}-%{orig_name}-%{version}
 
 mkdir build-py3
 
 %build
-pushd build
-  %cmake ../libcomps/ -DPYTHON_DESIRED:STRING=2
-  %make_build
-  make %{?_smp_mflags} docs
-  make %{?_smp_mflags} pydocs
-popd
-
 pushd build-py3
 # Workaround the limitations of EL7's RPM macros and/or old version of cmake
   %cmake ../libcomps/ -DPYTHON_DESIRED:STRING=3 -DPYTHON_INCLUDE_DIR=/usr/include/python3.6m -DPYTHON_LIBRARY=/usr/lib64/libpython3.6m.so
@@ -83,18 +35,14 @@ pushd build-py3
 popd
 
 %install
-pushd build
-  %make_install
-popd
-
 pushd build-py3
   %make_install
 popd
 
+mkdir -p -m 755 %{buildroot}%{_pkgdocdir}
+install -p -m 644 -t %{buildroot}%{_pkgdocdir} README.md COPYING 
+
 %check
-pushd build
-  make test
-popd
 pushd build-py3
   make pytest
 popd
@@ -105,27 +53,27 @@ popd
 %files
 %license COPYING
 %doc README.md
-%{_libdir}/%{name}.so.*
+%exclude %{_libdir}/%%{orig_name}.so.*
 
-%files devel
-%{_libdir}/%{name}.so
-%{_includedir}/%{name}/
-
-%files doc
-%doc build/docs/libcomps-doc/html
-
-%files -n python-%{name}-doc
-%doc build/src/python/docs/html
-
-%files -n python2-%{name}
-%{python2_sitearch}/%{name}/
-
-%files -n python3-%{name}
-%{python3_sitearch}/%{name}/
+#%%files devel
+%exclude %{_libdir}/%%{orig_name}.so
+%exclude %{_includedir}/%%{orig_name}/
+#
+#%%files doc
+#%%doc build/docs/libcomps-doc/html
+#
+#%%files -n python-%%{name}-doc
+#%%doc build/src/python/docs/html
+#
+#%%files -n python2-%%{name}
+#%%{python2_sitearch}/%%{name}/
+#
+#%%files -n python3-%%{name}
+%{python3_sitearch}/%{orig_name}/
 
 %changelog
-* Mon Nov 11 2019 Mike DePaulo <mikedep333@gmail.com> - 0.1.8-12.0.1
-- Build Python 3 subpackage (EL7-specific logic)
+* Tue Nov 12 2019 Mike DePaulo <mikedep333@gmail.com> - 0.1.8-12
+- Convert to python3 bindings-only package for EPEL7
 - Move libcomps.spec to root dir to fix copr / rpkg SRPM builds
 
 * Mon Jun 11 2018 Marek Blaha <mblaha@redhat.com> - 0.1.8-12
