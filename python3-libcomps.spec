@@ -2,6 +2,7 @@
 Name:           python3-libcomps
 Version:        0.1.8
 Release:        12%{?dist}
+Summary:        Python 3 bindings for libcomps library
 
 License:        GPLv2+
 URL:            https://github.com/rpm-software-management/libcomps
@@ -13,14 +14,18 @@ BuildRequires:  libxml2-devel
 BuildRequires:  check-devel
 BuildRequires:  expat-devel
 
-Summary:        Python 3 bindings for libcomps library
-BuildRequires:  python3-devel
-%{?python_provide:%python_provide python3-%{orig_name}}
-Requires:       %{orig_name}%{?_isa} = %{version}-%{release}
-Obsoletes:      platform-python-%{name} < %{version}-%{release}
-
 %description
 Python3 bindings for libcomps library.
+
+%package -n python%{python3_pkgversion}-%{orig_name}
+Summary:        %{summary}
+BuildRequires:  python3-devel
+%{?python_provide:%python_provide python3-%{orig_name}}
+Requires:       %{orig_name}% = %{version}
+Requires:       %{orig_name}% >= %{version}-%{release}
+
+%description -n python%{python3_pkgversion}-%{orig_name}
+%{description}
 
 %prep
 %autosetup -n %{orig_name}-%{orig_name}-%{version}
@@ -39,9 +44,6 @@ pushd build-py3
   %make_install
 popd
 
-mkdir -p -m 755 %{buildroot}%{_pkgdocdir}
-install -p -m 644 -t %{buildroot}%{_pkgdocdir} README.md COPYING 
-
 %check
 pushd build-py3
   make pytest
@@ -50,7 +52,7 @@ popd
 %post -p /sbin/ldconfig
 %postun -p /sbin/ldconfig
 
-%files
+%files -n python%{python3_pkgversion}-%{orig_name}
 %license COPYING
 %doc README.md
 %exclude %{_libdir}/%%{orig_name}.so.*
@@ -75,6 +77,7 @@ popd
 * Tue Nov 12 2019 Mike DePaulo <mikedep333@gmail.com> - 0.1.8-12
 - Convert to python3 bindings-only package for EPEL7
 - Move libcomps.spec to root dir to fix copr / rpkg SRPM builds
+- Adapt to the example of python3-rpm (the pythonXY RPM name in particular)
 
 * Mon Jun 11 2018 Marek Blaha <mblaha@redhat.com> - 0.1.8-12
 - Build for RHEL 7
